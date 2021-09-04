@@ -4,6 +4,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "shader.h"
+
 void print_all_errors()
 {
 	while(auto error = glGetError())
@@ -95,37 +97,8 @@ int main()
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
-	print_all_errors();
-
-	unsigned int prog = glCreateProgram();
-
-	std::ifstream vertex_file("../res/shaders/vertex.shader");
-	std::ifstream fragment_file("../res/shaders/fragment.shader");
-	std::string vertex_src((std::istreambuf_iterator<char>(vertex_file)), (std::istreambuf_iterator<char>()));
-	std::string frag_src((std::istreambuf_iterator<char>(fragment_file)), (std::istreambuf_iterator<char>()));	
-
-	const char *vsrc = vertex_src.c_str();
-	unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vs, 1, &vsrc, NULL);
-	glCompileShader(vs);
-
-	const char *fsrc = frag_src.c_str();
-	unsigned int fs = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fs, 1, &fsrc, NULL);
-	glCompileShader(fs);
-
-	glAttachShader(prog, vs);
-	glAttachShader(prog, fs);
-	glLinkProgram(prog);
-	glValidateProgram(prog);
-
-	glDeleteShader(vs);
-	glDeleteShader(fs);
-
-	glUseProgram(prog);
-
-	int loc = glGetUniformLocation(prog, "ourcolor");
-	glUniform4f(loc, 1.0f, 1.0f, 0.0f, 1.0f);
+	Shader s1("../res/shaders/vertex.shader", "../res/shaders/fragment.shader");
+	s1.use();
 
 	while(!glfwWindowShouldClose(window))
 	{
