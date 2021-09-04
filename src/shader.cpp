@@ -66,3 +66,8 @@ void Shader::seti(const char *uniform_name, int value)
 	int location = glGetUniformLocation(_program_id, uniform_name);
 	glUniform1i(location, value);
 }
+void Shader::setf(const char *uniform_name, float value)
+{
+	int location = glGetUniformLocation(_program_id, uniform_name);
+	glUniform1f(location, value);
+}

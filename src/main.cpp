@@ -129,10 +129,21 @@ int main()
 	s1.use();
 	s1.seti("u_btexture", 0);
 	s1.seti("u_gtexture", 1);
+	float trans = 0.2f, delta = 0.05f;
 
 	while(!glfwWindowShouldClose(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
+		s1.setf("u_trans", trans);
+
+		if (glfwGetKey(window, GLFW_KEY_UP))
+		{
+		    trans += delta;
+		}
+		if (glfwGetKey(window, GLFW_KEY_DOWN))
+		{
+		    trans -= delta;
+		}
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
