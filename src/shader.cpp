@@ -60,3 +60,9 @@ void Shader::use()
 {
 	glUseProgram(_program_id);
 }
+
+void Shader::seti(const char *uniform_name, int value)
+{
+	int location = glGetUniformLocation(_program_id, uniform_name);
+	glUniform1i(location, value);
+}
