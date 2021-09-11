@@ -1,7 +1,9 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "vendor/glm/ext/matrix_clip_space.hpp"
 #include "vendor/glm/ext/matrix_transform.hpp"
+#include "vendor/glm/trigonometric.hpp"
 #include "vendor/stb_image/stb_image.h"
 #include "vendor/glm/glm.hpp"
 #include "vendor/glm/gtc/matrix_transform.hpp"
@@ -117,15 +119,22 @@ int main()
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
-	glm::mat4 trans_mat = glm::mat4(1.0f);
-	trans_mat = glm::translate(trans_mat, glm::vec3(0.5, -0.5, 0.0));
-	trans_mat = glm::scale(trans_mat, glm::vec3(0.5, 0.5, 0.0));
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0, 0.0, 0.0));
+
+	glm::mat4 view = glm::mat4(1.0f);
+	view = glm::translate(view, glm::vec3(0.0, 0.0, -5.0));
+
+	glm::mat4 projection;
+	projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
 	Shader s1("../res/shaders/vertex.shader", "../res/shaders/fragment.shader");
 
 	s1.use();
 	s1.seti("u_btexture", 0);
-	s1.setmat4("u_mvp_mat", glm::value_ptr(trans_mat));
+	s1.setmat4("u_model", glm::value_ptr(model));
+	s1.setmat4("u_view", glm::value_ptr(view));
+	s1.setmat4("u_projection", glm::value_ptr(projection));
 	
 	print_all_errors();
 
