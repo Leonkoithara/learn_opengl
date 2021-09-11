@@ -11,7 +11,8 @@ public:
 	void use();
 
 	void seti(const char *uniform_name, int value);
-	void setf(const char *uniform_name, float value);	
+	void setf(const char *uniform_name, float value);
+	void setmat4(const char *uniform_name, const float *data);
 };
 
 #endif

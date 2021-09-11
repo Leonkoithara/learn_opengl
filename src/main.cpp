@@ -1,10 +1,15 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "stb_image/stb_image.h"
+#include "vendor/glm/ext/matrix_transform.hpp"
+#include "vendor/stb_image/stb_image.h"
+#include "vendor/glm/glm.hpp"
+#include "vendor/glm/gtc/matrix_transform.hpp"
+#include "vendor/glm/gtc/type_ptr.hpp"
 
 #include <iostream>
 #include <fstream>
+#include <math.h>
 
 #include "shader.h"
 
@@ -28,6 +33,7 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
  
 	/* Create a windowed mode window and its OpenGL context */
 	window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
@@ -52,7 +58,7 @@ int main()
 	unsigned char *image = stbi_load("../res/sprites/background.png", &width, &height, &nrChannels, 0);
 	if(!image)
 	{
-		std::cout << "Error loading image" << std::endl;
+		std::cout << "Error loading background image" << std::endl;
 		return -1;
 	}
 	int gwidth, gheight, gnrChannels;
@@ -125,31 +131,44 @@ int main()
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
+	glm::mat4 trans_mat = glm::mat4(1.0f);
+	glm::mat4 trans_mat2 = glm::mat4(1.0f);
+	
+	trans_mat = glm::translate(trans_mat, glm::vec3(0.5, -0.5, 0.0));
+	trans_mat = glm::scale(trans_mat, glm::vec3(0.5, 0.5, 0.5));
+	trans_mat = glm::rotate(trans_mat, glm::radians(45.0f), glm::vec3(0.0, 0.0, 1.0f));
+
+	trans_mat2 = glm::translate(trans_mat2, glm::vec3(-0.5, 0.5, 0.0));
+
 	Shader s1("../res/shaders/vertex.shader", "../res/shaders/fragment.shader");
 	s1.use();
 	s1.seti("u_btexture", 0);
 	s1.seti("u_gtexture", 1);
-	float trans = 0.2f, delta = 0.05f;
+
+	float trans = 0.2f, alpha_delta = 0.05f;
 
 	while(!glfwWindowShouldClose(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
 		s1.setf("u_trans", trans);
+		s1.setmat4("u_scale_mat", glm::value_ptr(trans_mat));
 
 		if (glfwGetKey(window, GLFW_KEY_UP))
-		{
-		    trans += delta;
-		}
+		    trans += alpha_delta;
 		if (glfwGetKey(window, GLFW_KEY_DOWN))
-		{
-		    trans -= delta;
-		}
+		    trans -= alpha_delta;
+		double time = glfwGetTime();
+		trans_mat = glm::rotate(trans_mat, glm::radians((float)time), glm::vec3(0.0, 0.0, 1.0));
+		trans_mat2 = glm::scale(trans_mat2, glm::vec3(time, time, 0));
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
 		glBindVertexArray(vao1);
+		
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+		s1.setmat4("u_scale_mat", glm::value_ptr(trans_mat2));
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
 		glfwSwapBuffers(window);
@@ -158,6 +177,6 @@ int main()
 	}
 
 	glfwTerminate();	
-	
+
 	return 0;
 }
