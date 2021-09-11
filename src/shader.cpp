@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 
+
 Shader::Shader(const char *vertex, const char *fragment) : _program_id(0)
 {
 	int success;
@@ -43,7 +44,7 @@ Shader::Shader(const char *vertex, const char *fragment) : _program_id(0)
 	glAttachShader(_program_id, fs);
 	
 	glLinkProgram(_program_id);
-	glGetShaderiv(_program_id, GL_LINK_STATUS, &success);
+	glGetProgramiv(_program_id, GL_LINK_STATUS, &success);
 	if(!success)
 	{
 		glGetProgramInfoLog(_program_id, 512, NULL, infolog);
