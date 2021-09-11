@@ -1,6 +1,5 @@
 #version 330 core
 
-in vec3 vcolor;
 in vec2 vtex;
 
 uniform sampler2D u_btexture;
