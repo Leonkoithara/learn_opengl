@@ -9,6 +9,7 @@
 #include "vendor/glm/gtc/matrix_transform.hpp"
 #include "vendor/glm/gtc/type_ptr.hpp"
 
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <math.h>
@@ -91,35 +92,27 @@ int main()
 
 	float vbo_data[] =
 	{
-		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f, 0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
+		-10.0f, -10.0f, -10.0f, 0.0f, 0.0f,
+		 10.0f, -10.0f, -10.0f, 1.0f, 0.0f,
+		-10.0f,  10.0f, -10.0f, 0.0f, 1.0f,
+		 10.0f,  10.0f, -10.0f, 1.0f, 1.0f,
 
-		-0.5f, -0.5f,  0.5f, 0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f, 1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f, 0.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f, 1.0f, 1.0f,
+		-10.0f, -10.0f,  10.0f, 0.0f, 0.0f,
+		 10.0f, -10.0f,  10.0f, 1.0f, 0.0f,
+		-10.0f,  10.0f,  10.0f, 0.0f, 1.0f,
+		 10.0f,  10.0f,  10.0f, 1.0f, 1.0f,
 
-		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f, 1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f, 0.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f, 1.0f, 1.0f,
+		-10.0f, -10.0f,  10.0f, 1.0f, 0.0f,
+		-10.0f,  10.0f,  10.0f, 1.0f, 1.0f,
 
-		 0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f, 1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f, 0.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f, 1.0f, 1.0f,
+		10.0f, -10.0f, -10.0f, 0.0f, 0.0f,
+		10.0f,  10.0f, -10.0f, 0.0f, 1.0f,
 
-		-0.5f, -0.5f,  0.5f, 0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f, 1.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+		-10.0f, -10.0f, -10.0f, 0.0f, 1.0f,
+		10.0f, -10.0f, -10.0f, 1.0f, 1.0f,
 
-		-0.5f,  0.5f,  0.5f, 0.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f, 1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f, 0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f, 1.0f, 1.0f,		
+		-10.0f,  10.0f,  10.0f, 0.0f, 0.0f,
+		10.0f,  10.0f,  10.0f, 1.0f, 0.0f
 	};
 	unsigned int t1_buff;
 	glGenBuffers(1, &t1_buff);
@@ -131,14 +124,14 @@ int main()
 		1, 2, 3,
 		4, 5, 6,
 		5, 6, 7,
-		8, 9, 10,
-		9, 10, 11,
-		12, 13, 14,
-		13, 14, 15,
-		16, 17, 18,
-		17, 18, 19,
-		20, 21, 22,
-		21, 22, 23
+		0, 8, 2,
+		8, 2, 9,
+		10, 5, 11,
+		5, 11, 7,
+		4, 5, 12,
+		5, 12, 13,
+		14, 15, 2,
+		15, 2, 3
 	};
 
 	unsigned int index1;
@@ -147,7 +140,7 @@ int main()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 12 * 3 * sizeof(unsigned int), i1, GL_STATIC_DRAW);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, t1_buff);
-	glBufferData(GL_ARRAY_BUFFER, 24 * 5 * sizeof(float), vbo_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 16 * 5 * sizeof(float), vbo_data, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
@@ -156,10 +149,9 @@ int main()
 
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0, 0.0, 0.0));
+	model = glm::rotate(model, glm::radians(30.0f), glm::vec3(0.0, 1.0, 0.0));
 
 	glm::mat4 view = glm::mat4(1.0f);
-	view = glm::translate(view, glm::vec3(0.0, 0.0, -5.0));
-	view = glm::rotate(view, glm::radians(20.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	glm::mat4 projection;
 	projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
@@ -176,6 +168,15 @@ int main()
 
 	while(!glfwWindowShouldClose(window))
 	{
+		float radius = 80.0;
+		float aspeed = 20.0;
+		double time = glfwGetTime();
+
+		float x = radius * std::sin(aspeed * time / radius);
+		float z = radius * std::cos(aspeed * time / radius);
+		view = glm::lookAt(glm::vec3(x, 0.0f, z), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		s1.setmat4("u_view", glm::value_ptr(view));
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glBindTexture(GL_TEXTURE_2D, texture1);
