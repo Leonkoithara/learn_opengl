@@ -3,6 +3,7 @@
 
 #include "vendor/glm/ext/matrix_clip_space.hpp"
 #include "vendor/glm/ext/matrix_transform.hpp"
+#include "vendor/glm/geometric.hpp"
 #include "vendor/glm/trigonometric.hpp"
 #include "vendor/stb_image/stb_image.h"
 #include "vendor/glm/glm.hpp"
@@ -15,6 +16,15 @@
 #include <math.h>
 
 #include "shader.h"
+#include "camera.h"
+
+bool first = true;
+float lastx = 400, lasty = 300;
+float pitch, yaw = -90.0f, zoom = 45.0f;
+Camera cam;
+int process_input(GLFWwindow *);
+void mouse_movement_callback(GLFWwindow *, double, double);
+void mouse_scroll_callback(GLFWwindow *, double, double);
 
 void print_all_errors()
 {
@@ -59,12 +69,16 @@ int main()
 
 	glEnable(GL_DEPTH_TEST);
 
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouse_movement_callback);
+	glfwSetScrollCallback(window, mouse_scroll_callback);
+
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
 	stbi_set_flip_vertically_on_load(1);
 	
 	int width, height, nrChannels;
-	unsigned char *image = stbi_load("../res/sprites/crate.png", &width, &height, &nrChannels, 0);
+	unsigned char *image = stbi_load("./res/sprites/crate.png", &width, &height, &nrChannels, 0);
 	if(!image)
 	{
 		std::cout << "Error loading background image" << std::endl;
@@ -154,28 +168,49 @@ int main()
 	glm::mat4 view = glm::mat4(1.0f);
 
 	glm::mat4 projection;
-	projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+	projection = glm::perspective(glm::radians(zoom), 800.0f / 600.0f, 0.1f, 100.0f);
+	cam.set_fov(zoom);
 
-	Shader s1("../res/shaders/vertex.shader", "../res/shaders/fragment.shader");
+	Shader s1("./res/shaders/vertex.shader", "./res/shaders/fragment.shader");
 
 	s1.use();
 	s1.seti("u_btexture", 0);
 	s1.setmat4("u_model", glm::value_ptr(model));
 	s1.setmat4("u_view", glm::value_ptr(view));
 	s1.setmat4("u_projection", glm::value_ptr(projection));
+
+	cam.set_cam_pos(0.0f, 0.0f, 80.0f);
 	
 	print_all_errors();
 
 	while(!glfwWindowShouldClose(window))
 	{
-		float radius = 80.0;
-		float aspeed = 20.0;
-		double time = glfwGetTime();
+		int action = process_input(window);
 
-		float x = radius * std::sin(aspeed * time / radius);
-		float z = radius * std::cos(aspeed * time / radius);
-		view = glm::lookAt(glm::vec3(x, 0.0f, z), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		s1.setmat4("u_view", glm::value_ptr(view));
+		switch (action)
+		{
+		case -1:
+			return 0;
+			break;
+		case 87:
+			cam.move_cam_pos(0.0f, -0.1f, 0.0f);
+			break;
+		case 65:
+			cam.move_cam_pos(0.1f, 0.0f, 0.0f);
+			break;
+		case 83:
+			cam.move_cam_pos(0.0f, 0.1f, 0.0f);
+			break;
+		case 68:
+			cam.move_cam_pos(-0.1f, 0.0f, 0.0f);
+			break;
+		case -2:
+			std::cout << zoom << std::endl;
+			break;
+		}
+
+		s1.setmat4("u_view", glm::value_ptr(cam.get_view_mat()));
+		s1.setmat4("u_projection", glm::value_ptr(cam.get_projection_mat(false)));
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -192,4 +227,57 @@ int main()
 	glfwTerminate();	
 
 	return 0;
+}
+
+int process_input(GLFWwindow *window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE))
+	{
+		std::cout << "Exiting program" << std::endl;
+	    return -1;
+	}
+	if (glfwGetKey(window, GLFW_KEY_W))
+		return 87;
+	if (glfwGetKey(window, GLFW_KEY_A))
+		return 65;
+	if (glfwGetKey(window, GLFW_KEY_S))
+		return 83;
+	if (glfwGetKey(window, GLFW_KEY_D))
+		return 68;
+	if(glfwGetKey(window, GLFW_KEY_T))
+		return -2;
+
+	return 0;
+}
+
+void mouse_movement_callback(GLFWwindow *window, double xpos, double ypos)
+{
+	if(first)
+	{
+		lastx = xpos;
+		lasty = ypos;
+		first = false;
+	}
+	float xoff = xpos - lastx, yoff = ypos - lasty;
+	lastx = xpos, lasty = ypos;
+
+	const float sensitivity = 0.01f;
+	xoff *= sensitivity;
+	yoff *= sensitivity;
+
+	yaw += xoff;
+	pitch += yoff;
+
+	cam.set_cam_direction(pitch, yaw, 0.0f);
+}
+
+void mouse_scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
+{
+	zoom -= yoffset;
+	if (zoom < 0.0f)
+	    zoom = 0.0f;
+	else if (zoom > 45.0f)
+		zoom = 45.0f;
+
+	cam.set_fov(zoom);
 }
